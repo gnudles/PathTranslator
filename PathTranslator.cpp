@@ -1,9 +1,20 @@
 #include "PathTranslator.h"
 #include <vector>
+#include <assert.h>
 
-PathTranslator::PathTranslator()
+PathTranslator::PathTranslator(const std::string &root, const std::string &cwd)
 {
+    _root = root;
+    if (_root.back() !='/') _root.append("/");
+    setAbsPath(_cwd, cwd);
 }
+void PathTranslator::setAbsPath(std::string & dest, const std::string &src)
+{
+     assert (src.front() == '/');
+     dest = src; if (dest.back() !='/') dest.append("/");
+     assert (dest.find("/../",0) == std::string::npos);
+}
+
 std::string getNextToken(const std::string &path, size_t from)
 {
     size_t found = 0;
@@ -35,7 +46,7 @@ std::string PathTranslator::virtualToReal(const std::string &path)
         std::vector<std::string> tokens;
         while (true)
         {
-            std:string token = getNextToken(path,seek_pos);
+            std::string token = getNextToken(path,seek_pos);
             if (token=="")
             {
                 break;
@@ -55,10 +66,8 @@ std::string PathTranslator::virtualToReal(const std::string &path)
         }
         std::string out = _root;
         bool append_slash = false;
-        if (out[out.size()] != '/')
-            append_slash = true;
 
-        std::vector::const_iterator<std::string> > it=tokens.begin();
+        std::vector<std::string>::const_iterator it=tokens.begin();
         for (;it!= tokens.end();++it)
         {
             if (append_slash)
@@ -70,6 +79,6 @@ std::string PathTranslator::virtualToReal(const std::string &path)
     }
     else
     {
-
+        virtualToReal(_cwd+path);
     }
 }
