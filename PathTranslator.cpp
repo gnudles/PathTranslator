@@ -15,10 +15,14 @@ void PathTranslator::setAbsPath(std::string & dest, const std::string &src)
      assert (dest.find("/../",0) == std::string::npos);
 }
 
-std::string getNextToken(const std::string &path, size_t from)
+std::string getNextToken(const std::string &path, size_t & from)
 {
     size_t found = 0;
     bool repeat = true;
+    if (from >= path.length())
+    {
+        return "";
+    }
     while(repeat)
     {
      found = path.find('/',from);
@@ -26,13 +30,22 @@ std::string getNextToken(const std::string &path, size_t from)
      {
          from++;
      }
+     else
+     {
+         repeat = false;
+     }
     }
 
     if (found == std::string::npos)
     {
-        return path.substr(from);
+        size_t subs_from = from;
+        from = path.length();
+        return path.substr(subs_from);
     }
-    return path.substr(from,found-from);
+    size_t len = found - from;
+    size_t subs_from = from;
+    from = found + 1;
+    return path.substr(subs_from, len);
 }
 
 std::string PathTranslator::virtualToReal(const std::string &path)
@@ -42,7 +55,7 @@ std::string PathTranslator::virtualToReal(const std::string &path)
     if (path.at(0)=='/')
     {
         size_t seek_pos = 1;
-        size_t depth = 0;
+        int depth = 0;
         std::vector<std::string> tokens;
         while (true)
         {
@@ -79,6 +92,11 @@ std::string PathTranslator::virtualToReal(const std::string &path)
     }
     else
     {
-        virtualToReal(_cwd+path);
+        return virtualToReal(_cwd+path);
     }
+}
+
+std::string PathTranslator::realToVirtual(const std::string &path)
+{
+
 }
